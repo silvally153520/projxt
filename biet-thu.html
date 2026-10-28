@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Tìm biệt thự riêng tư cho kỳ nghỉ bên gia đình và bạn bè với LocalVibe." />
+    <meta name="theme-color" content="#062f48" />
+    <title>Biệt thự riêng tư — LocalVibe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="hotels-data.js" defer></script>
+    <script src="catalog.js" defer></script>
+    <script src="account.js" defer></script>
+  </head>
+  <body data-catalog-kind="Biệt thự">
+    <header class="site-header inner-page-header" id="top">
+      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">⌂</span><span>LocalVibe</span></a>
+      <nav class="main-nav" aria-label="Điều hướng chính">
+        <a href="khach-san.html">Khách sạn</a>
+        <a href="resort.html">Resort</a>
+        <a class="is-current" href="biet-thu.html" aria-current="page">Biệt thự</a>
+      </nav>
+      <div class="header-actions">
+        <div class="account-actions" id="account-actions"></div>
+        <button class="menu-toggle" type="button" aria-label="Mở menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </header>
+    <main>
+      <section class="catalog-hero villa-catalog-hero">
+        <span class="eyebrow">LOCALVIBE · KHÔNG GIAN RIÊNG CỦA BẠN</span>
+        <h1>Ở riêng tư, <span>vui trọn từng khoảnh khắc</span></h1>
+        <p>Biệt thự có hồ bơi, căn nhà giữa rừng và khoảng trời chỉ dành cho gia đình bạn.</p>
+        <a class="button catalog-hero-button" href="#catalog">Khám phá biệt thự <span aria-hidden="true">↓</span></a>
+      </section>
+      <section class="section catalog-section" id="catalog">
+        <div class="section-heading">
+          <div><span class="eyebrow">CHỈ CÁC BIỆT THỰ</span><h2 id="catalog-heading">Biệt thự</h2><p class="section-subtitle" id="catalog-count"></p></div>
+          <a class="link-arrow" href="index.html">Về trang chủ <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="hotel-grid catalog-grid" id="catalog-grid"></div>
+      </section>
+      <section class="catalog-promo"><span>Một căn nhà riêng, thật nhiều kỷ niệm bên nhau.</span><a href="don-dat-phong.html">Theo dõi đơn đặt phòng →</a></section>
+    </main>
+    <footer class="inner-footer"><a class="brand" href="index.html"><span class="brand-mark">⌂</span><span>LocalVibe</span></a><span>Trải nghiệm lưu trú theo cách của bạn.</span><a href="ca-nhan.html">Tài khoản cá nhân</a></footer>
+    <div class="toast" id="page-toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

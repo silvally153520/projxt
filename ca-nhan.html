@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Quản lý thông tin cá nhân và thông tin liên hệ LocalVibe của bạn." />
+    <meta name="theme-color" content="#062f48" />
+    <title>Thông tin cá nhân — LocalVibe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="hotels-data.js" defer></script>
+    <script src="account.js" defer></script>
+  </head>
+  <body data-account-page="profile">
+    <header class="site-header inner-page-header" id="top">
+      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">⌂</span><span>LocalVibe</span></a>
+      <nav class="main-nav" aria-label="Điều hướng chính">
+        <a href="khach-san.html">Khách sạn</a><a href="resort.html">Resort</a><a href="biet-thu.html">Biệt thự</a>
+      </nav>
+      <div class="header-actions">
+        <div class="account-actions" id="account-actions"></div>
+        <button class="menu-toggle" type="button" aria-label="Mở menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </header>
+    <main class="account-page">
+      <section class="account-page-heading">
+        <span class="eyebrow">TÀI KHOẢN LOCALVIBE</span>
+        <h1>Thông tin cá nhân</h1>
+        <p>Quản lý thông tin liên hệ và cách chúng tôi xưng hô với bạn.</p>
+      </section>
+      <div class="account-layout">
+        <aside class="account-sidebar">
+          <div class="profile-summary">
+            <div class="profile-avatar" id="profile-avatar">L</div>
+            <strong id="profile-display-name"></strong>
+            <span id="profile-display-email"></span>
+          </div>
+          <a class="account-side-link is-active" href="ca-nhan.html"><span>♙</span> Hồ sơ cá nhân</a>
+          <a class="account-side-link" href="don-dat-phong.html"><span>▤</span> Đơn đặt phòng</a>
+        </aside>
+        <section class="profile-panel">
+          <div class="profile-panel-heading"><h2>Hồ sơ của bạn</h2><p>Thông tin có thể được cập nhật bất cứ lúc nào.</p></div>
+          <form id="profile-form" class="profile-form">
+            <div class="profile-fields">
+              <label>Họ và tên<input id="profile-name" type="text" autocomplete="name" minlength="2" maxlength="80" required /></label>
+              <label>Email đăng nhập<input id="profile-email" type="email" autocomplete="email" readonly aria-describedby="email-note" /><small id="email-note">Email đăng nhập không thể thay đổi.</small></label>
+              <label>Số điện thoại<input id="profile-phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="0912 345 678" /></label>
+              <label>Ngày sinh<input id="profile-birthdate" type="date" autocomplete="bday" /></label>
+              <label>Giới tính
+                <select id="profile-gender">
+                  <option value="">Không muốn chia sẻ</option>
+                  <option value="Nữ">Nữ</option>
+                  <option value="Nam">Nam</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </label>
+              <label>Thành phố<input id="profile-city" type="text" autocomplete="address-level2" maxlength="100" placeholder="Ví dụ: Hà Nội" /></label>
+              <label class="profile-address">Địa chỉ<textarea id="profile-address" rows="3" autocomplete="street-address" maxlength="240" placeholder="Số nhà, đường, phường/xã..."></textarea></label>
+            </div>
+            <p class="form-error" id="profile-error" role="alert" hidden></p>
+            <div class="profile-form-footer"><span>Thông tin được lưu trên trình duyệt này.</span><button class="button profile-save" type="submit">Lưu thay đổi</button></div>
+          </form>
+        </section>
+      </div>
+    </main>
+    <footer class="inner-footer"><a class="brand" href="index.html"><span class="brand-mark">⌂</span><span>LocalVibe</span></a><span>Trải nghiệm lưu trú theo cách của bạn.</span><a href="don-dat-phong.html">Xem đơn đặt phòng</a></footer>
+    <div class="toast" id="page-toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

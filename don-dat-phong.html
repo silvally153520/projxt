@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Xem chi tiết, trạng thái và quản lý các đơn đặt phòng LocalVibe." />
+    <meta name="theme-color" content="#062f48" />
+    <title>Đơn đặt phòng — LocalVibe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="hotels-data.js" defer></script>
+    <script src="account.js" defer></script>
+  </head>
+  <body data-account-page="orders">
+    <header class="site-header inner-page-header" id="top">
+      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">⌂</span><span>LocalVibe</span></a>
+      <nav class="main-nav" aria-label="Điều hướng chính">
+        <a href="khach-san.html">Khách sạn</a><a href="resort.html">Resort</a><a href="biet-thu.html">Biệt thự</a>
+      </nav>
+      <div class="header-actions">
+        <div class="account-actions" id="account-actions"></div>
+        <button class="menu-toggle" type="button" aria-label="Mở menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </header>
+    <main class="account-page">
+      <section class="account-page-heading orders-page-heading">
+        <span class="eyebrow">HÀNH TRÌNH CỦA BẠN</span>
+        <h1>Đơn đặt phòng</h1>
+        <p>Theo dõi trạng thái, lịch trình và thông tin từng lần lưu trú.</p>
+      </section>
+      <div class="account-layout">
+        <aside class="account-sidebar">
+          <a class="account-side-link" href="ca-nhan.html"><span>♙</span> Hồ sơ cá nhân</a>
+          <a class="account-side-link is-active" href="don-dat-phong.html"><span>▤</span> Đơn đặt phòng</a>
+        </aside>
+        <section class="orders-page-panel">
+          <div class="orders-page-heading"><div><h2>Chuyến đi của tôi</h2><p id="orders-page-count"></p></div><a class="button explore-hotels" href="khach-san.html">Khám phá chỗ nghỉ</a></div>
+          <div class="orders-list orders-page-list" id="orders-page-list"></div>
+        </section>
+      </div>
+    </main>
+    <footer class="inner-footer"><a class="brand" href="index.html"><span class="brand-mark">⌂</span><span>LocalVibe</span></a><span>Trải nghiệm lưu trú theo cách của bạn.</span><a href="ca-nhan.html">Thông tin cá nhân</a></footer>
+    <div class="toast" id="page-toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
