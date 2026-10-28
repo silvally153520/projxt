@@ -107,10 +107,112 @@ const checkOutInput = document.querySelector("#check-out");
 const toast = document.querySelector("#toast");
 const detailDialog = document.querySelector("#detail-dialog");
 const authDialog = document.querySelector("#auth-dialog");
+const bookingDialog = document.querySelector("#booking-dialog");
+const ordersDialog = document.querySelector("#orders-dialog");
 let guestCount = 2;
 let selectedCategory = "";
 let selectedKind = "";
 let toastTimeout;
+let pendingHotelIndex = null;
+const storageKeys = {
+  accounts: "localvibe.accounts",
+  session: "localvibe.session",
+  orders: "localvibe.orders",
+  favorites: "localvibe.favorites"
+};
+let accounts = readStoredValue(storageKeys.accounts, []);
+let orders = readStoredValue(storageKeys.orders, []);
+let favoriteHotels = readStoredValue(storageKeys.favorites, []);
+let currentUserEmail = readStoredValue(storageKeys.session, null);
+
+function readStoredValue(key, fallback) {
+  try {
+    const stored = localStorage.getItem(key);
+    if (stored === null) return fallback;
+    const value = JSON.parse(stored);
+    if (key === storageKeys.accounts && !Array.isArray(value)) throw new Error("Danh sách tài khoản không hợp lệ.");
+    if (key === storageKeys.orders && !Array.isArray(value)) throw new Error("Danh sách đơn đặt phòng không hợp lệ.");
+    if (key === storageKeys.favorites && !Array.isArray(value)) throw new Error("Danh sách yêu thích không hợp lệ.");
+    if (key === storageKeys.session && value !== null && typeof value !== "string") throw new Error("Phiên đăng nhập không hợp lệ.");
+    return value;
+  } catch (error) {
+    console.error(`Không thể đọc dữ liệu ${key}:`, error);
+    showToast(`Không thể đọc dữ liệu đã lưu (${key}). Hãy thử tải lại trang.`);
+    return fallback;
+  }
+}
+
+function saveStoredValue(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error(`Không thể lưu dữ liệu ${key}:`, error);
+    throw new Error("Không thể lưu dữ liệu vào trình duyệt. Hãy kiểm tra dung lượng lưu trữ.");
+  }
+}
+
+function getCurrentUser() {
+  return accounts.find((account) => account.email === currentUserEmail) || null;
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
+}
+
+function bytesToBase64(bytes) {
+  return btoa(String.fromCharCode(...new Uint8Array(bytes)));
+}
+
+function base64ToBytes(value) {
+  return Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
+}
+
+async function hashPassword(password, salt) {
+  if (!crypto.subtle) throw new Error("Xác thực cần kết nối HTTPS hoặc localhost trên trình duyệt hiện đại.");
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  const saltBytes = salt ? base64ToBytes(salt) : crypto.getRandomValues(new Uint8Array(16));
+  const hash = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt: saltBytes, iterations: 210000, hash: "SHA-256" },
+    key,
+    256
+  );
+  return { salt: bytesToBase64(saltBytes), hash: bytesToBase64(hash) };
+}
+
+function datesToNights(checkin, checkout) {
+  if (!checkin || !checkout) return 0;
+  return (Date.parse(`${checkout}T00:00:00Z`) - Date.parse(`${checkin}T00:00:00Z`)) / 86400000;
+}
+
+function formatDate(value) {
+  return new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium", timeZone: "UTC" })
+    .format(new Date(`${value}T00:00:00Z`));
+}
+
+function createId() {
+  return crypto.randomUUID();
+}
+
+function renderAccountActions() {
+  const actions = document.querySelector("#account-actions");
+  const user = getCurrentUser();
+  if (!user) {
+    actions.innerHTML = `
+      <button class="text-button" type="button" data-auth="login">Đăng nhập</button>
+      <button class="button button-small" type="button" data-auth="register">Đăng ký</button>`;
+    return;
+  }
+  actions.innerHTML = `
+    <span class="account-name" title="${escapeHtml(user.name)}">Xin chào, ${escapeHtml(user.name)}</span>
+    <button class="account-link" type="button" data-orders>Mục đặt phòng</button>
+    <button class="account-link logout-button" type="button" data-logout>Đăng xuất</button>`;
+}
 
 const imageUrl = (image, width = 720) =>
   `https://images.unsplash.com/${image}?auto=format&fit=crop&w=${width}&q=85`;
@@ -124,7 +226,7 @@ function renderHotels(list = hotels) {
         <div class="hotel-image-wrap" data-details="${index}" tabindex="0" role="button" aria-label="Xem ${hotel.name}">
           <img class="hotel-image" src="${imageUrl(hotel.image)}" alt="${hotel.name}" loading="lazy" />
           <span class="hotel-badge">${hotel.badge}</span>
-          <button class="favorite-button" type="button" data-favorite="${index}" aria-label="Lưu ${hotel.name}" aria-pressed="false">♡</button>
+          <button class="favorite-button${favoriteHotels.includes(index) ? " is-favorite" : ""}" type="button" data-favorite="${index}" aria-label="${favoriteHotels.includes(index) ? "Bỏ lưu" : "Lưu"} ${hotel.name}" aria-pressed="${favoriteHotels.includes(index)}">${favoriteHotels.includes(index) ? "♥" : "♡"}</button>
         </div>
         <div class="hotel-info">
           <div class="hotel-title-row"><h3>${hotel.name}</h3><span class="rating">★ ${hotel.score}</span></div>
@@ -192,20 +294,108 @@ function openHotelDetails(index) {
       <p>${hotel.description}</p>
       <div class="amenities">${hotel.amenities.map((amenity) => `<span>${amenity}</span>`).join("")}</div>
       <div class="dialog-meta"><span>Giá mỗi đêm</span><strong class="dialog-price">${formatPrice(hotel.price)}</strong></div>
-      <button class="button dialog-book" type="button">Đặt phòng ngay</button>
+      <p class="demo-disclaimer">Giá hiển thị là giá mẫu; tổng tiền tính theo số đêm.</p>
+      <button class="button dialog-book" type="button" data-book="${index}">Đặt phòng ngay</button>
     </div>`;
   detailDialog.showModal();
 }
 
 function openAuth(mode) {
   const isRegister = mode === "register";
+  document.querySelectorAll(".auth-register-field").forEach((field) => {
+    field.hidden = !isRegister;
+    if (field instanceof HTMLInputElement) field.required = isRegister;
+  });
   document.querySelector("#auth-title").textContent = isRegister ? "Tạo tài khoản" : "Đăng nhập";
   document.querySelector(".auth-submit").textContent = isRegister ? "Đăng ký" : "Đăng nhập";
+  document.querySelector("#auth-password").autocomplete = isRegister ? "new-password" : "current-password";
   document.querySelector("#auth-switch").innerHTML = isRegister
     ? "Đã có tài khoản? <strong>Đăng nhập</strong>"
     : "Chưa có tài khoản? <strong>Đăng ký</strong>";
+  document.querySelector("#auth-error").hidden = true;
   authDialog.dataset.mode = mode;
   authDialog.showModal();
+}
+
+function openBooking(index) {
+  const hotel = hotels[index];
+  const user = getCurrentUser();
+  if (!hotel || !user) return;
+  pendingHotelIndex = index;
+  document.querySelector("#booking-hotel-summary").innerHTML = `
+    <img src="${imageUrl(hotel.image, 240)}" alt="" />
+    <div><strong>${escapeHtml(hotel.name)}</strong><span>${escapeHtml(hotel.city)} · ${formatPrice(hotel.price)} / đêm</span></div>`;
+  document.querySelector("#booking-name").value = user.name;
+  document.querySelector("#booking-email").value = user.email;
+  document.querySelector("#booking-phone").value = "";
+  document.querySelector("#booking-guests").value = guestCount;
+  document.querySelector("#booking-check-in").value = checkInInput.value;
+  document.querySelector("#booking-check-out").value = checkOutInput.value;
+  document.querySelector("#booking-note").value = "";
+  document.querySelector("#booking-error").hidden = true;
+  updateBookingTotal();
+  bookingDialog.showModal();
+}
+
+function updateBookingTotal() {
+  const hotel = hotels[pendingHotelIndex];
+  const checkin = document.querySelector("#booking-check-in").value;
+  const checkout = document.querySelector("#booking-check-out").value;
+  const nights = datesToNights(checkin, checkout);
+  const total = hotel && nights > 0 ? hotel.price * nights : 0;
+  document.querySelector("#booking-total").innerHTML =
+    `Tổng tiền · ${nights > 0 ? `${nights} đêm` : "Chọn ngày trả phòng"}<strong>${total ? formatPrice(total) : "—"}</strong>`;
+}
+
+function startBooking(index) {
+  if (!getCurrentUser()) {
+    pendingHotelIndex = index;
+    detailDialog.close();
+    openAuth("login");
+    showToast("Đăng nhập hoặc đăng ký để tiếp tục đặt phòng.");
+    return;
+  }
+  detailDialog.close();
+  openBooking(index);
+}
+
+function renderOrders() {
+  const user = getCurrentUser();
+  if (!user) return;
+  const userOrders = orders
+    .filter((order) => order.email === user.email)
+    .sort((first, second) => second.createdAt.localeCompare(first.createdAt));
+  document.querySelector("#orders-subtitle").textContent =
+    `${userOrders.length} đơn đặt phòng · ${user.email}`;
+  document.querySelector("#orders-list").innerHTML = userOrders.length
+    ? userOrders.map((order) => {
+      const canCancel = order.status === "Chờ xác nhận" && order.checkin >= todayString;
+      const statusClass = order.status === "Đã hủy" ? " cancelled" : "";
+      const hotel = hotels.find((item) => item.name === order.hotelName) || hotels[0];
+      return `
+        <article class="order-card">
+          <img src="${imageUrl(hotel.image, 300)}" alt="" />
+          <div class="order-card-content">
+            <div class="order-card-heading">
+              <div><h3>${escapeHtml(order.hotelName)}</h3><p class="order-number">Mã đơn ${escapeHtml(order.id)}</p></div>
+              <span class="order-status${statusClass}">${escapeHtml(order.status)}</span>
+            </div>
+            <div class="order-details">
+              <span>Nhận phòng <strong>${formatDate(order.checkin)}</strong></span>
+              <span>Trả phòng <strong>${formatDate(order.checkout)}</strong></span>
+              <span>${escapeHtml(order.fullName)} · ${escapeHtml(order.phone)}</span>
+              <span>${escapeHtml(order.contactEmail || order.email)}</span>
+              <span>${escapeHtml(order.guests)} khách · ${escapeHtml(order.nights)} đêm</span>
+              <span>${escapeHtml(order.payment)}</span>
+            </div>
+            ${order.note ? `<p class="order-number">Yêu cầu: ${escapeHtml(order.note)}</p>` : ""}
+          </div>
+          <div class="order-card-footer"><strong>${formatPrice(order.total)}</strong>
+            ${canCancel ? `<button class="cancel-order" type="button" data-cancel-order="${escapeHtml(order.id)}">Hủy đơn</button>` : ""}
+          </div>
+        </article>`;
+    }).join("")
+    : `<p class="orders-empty">Bạn chưa có đơn đặt phòng nào. Chọn chỗ nghỉ yêu thích để bắt đầu chuyến đi nhé.</p>`;
 }
 
 const today = new Date();
@@ -217,7 +407,12 @@ checkInInput.min = todayString;
 checkInInput.value = todayString;
 checkOutInput.min = tomorrowString;
 checkOutInput.value = tomorrowString;
+document.querySelector("#booking-check-in").min = todayString;
+document.querySelector("#booking-check-in").value = todayString;
+document.querySelector("#booking-check-out").min = tomorrowString;
+document.querySelector("#booking-check-out").value = tomorrowString;
 renderHotels();
+renderAccountActions();
 
 document.querySelector("#search-form").addEventListener("submit", (event) => {
   event.preventDefault();
@@ -249,6 +444,19 @@ document.querySelector("#guest-plus").addEventListener("click", () => {
   guestOutput.textContent = guestCount;
 });
 checkInInput.addEventListener("change", updateCheckoutMinimum);
+document.querySelector("#booking-check-in").addEventListener("change", () => {
+  const checkin = document.querySelector("#booking-check-in").value;
+  const checkout = document.querySelector("#booking-check-out");
+  if (checkin) {
+    const minimum = new Date(`${checkin}T12:00:00`);
+    minimum.setDate(minimum.getDate() + 1);
+    checkout.min = `${minimum.getFullYear()}-${String(minimum.getMonth() + 1).padStart(2, "0")}-${String(minimum.getDate()).padStart(2, "0")}`;
+    if (checkout.value && checkout.value < checkout.min) checkout.value = checkout.min;
+  }
+  updateBookingTotal();
+});
+document.querySelector("#booking-check-out").addEventListener("change", updateBookingTotal);
+document.querySelector("#booking-guests").addEventListener("input", updateBookingTotal);
 
 destinationInput.addEventListener("input", () => {
   const query = destinationInput.value.trim().toLocaleLowerCase("vi");
@@ -279,10 +487,22 @@ document.addEventListener("click", (event) => {
   if (favorite) {
     event.stopPropagation();
     const isFavorite = favorite.getAttribute("aria-pressed") !== "true";
-    favorite.setAttribute("aria-pressed", String(isFavorite));
-    favorite.classList.toggle("is-favorite", isFavorite);
-    favorite.textContent = isFavorite ? "♥" : "♡";
-    showToast(isFavorite ? "Đã lưu chỗ nghỉ vào danh sách yêu thích." : "Đã bỏ chỗ nghỉ khỏi danh sách yêu thích.");
+    const hotelIndex = Number(favorite.dataset.favorite);
+    const previousFavorites = favoriteHotels;
+    favoriteHotels = isFavorite
+      ? [...new Set([...favoriteHotels, hotelIndex])]
+      : favoriteHotels.filter((index) => index !== hotelIndex);
+    try {
+      saveStoredValue(storageKeys.favorites, favoriteHotels);
+      favorite.setAttribute("aria-pressed", String(isFavorite));
+      favorite.setAttribute("aria-label", `${isFavorite ? "Bỏ lưu" : "Lưu"} ${hotels[hotelIndex].name}`);
+      favorite.classList.toggle("is-favorite", isFavorite);
+      favorite.textContent = isFavorite ? "♥" : "♡";
+      showToast(isFavorite ? "Đã lưu chỗ nghỉ vào danh sách yêu thích." : "Đã bỏ chỗ nghỉ khỏi danh sách yêu thích.");
+    } catch (error) {
+      favoriteHotels = previousFavorites;
+      showToast(error.message);
+    }
     return;
   }
   const suggestion = event.target.closest("[data-suggestion]");
@@ -329,22 +549,182 @@ document.querySelector("#show-all").addEventListener("click", () => {
   document.querySelectorAll(".category-card").forEach((item) => item.classList.remove("active"));
   applyFilters();
 });
-document.querySelectorAll("[data-auth]").forEach((button) => button.addEventListener("click", () => openAuth(button.dataset.auth)));
 document.querySelector("#auth-switch").addEventListener("click", () => openAuth(authDialog.dataset.mode === "register" ? "login" : "register"));
 document.querySelectorAll(".dialog-close").forEach((button) => button.addEventListener("click", () => button.closest("dialog").close()));
-document.querySelector("#dialog-content").addEventListener("click", (event) => {
-  if (event.target.closest(".dialog-book")) {
-    detailDialog.close();
-    openAuth("login");
-    showToast("Đăng nhập để tiếp tục đặt phòng.");
-  }
+authDialog.addEventListener("close", () => {
+  if (!getCurrentUser()) pendingHotelIndex = null;
 });
-document.querySelector("#auth-form").addEventListener("submit", (event) => {
+bookingDialog.addEventListener("close", () => {
+  pendingHotelIndex = null;
+});
+document.querySelector("#dialog-content").addEventListener("click", (event) => {
+  const bookButton = event.target.closest("[data-book]");
+  if (bookButton) startBooking(Number(bookButton.dataset.book));
+});
+document.querySelector("#auth-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const isRegister = authDialog.dataset.mode === "register";
-  authDialog.close();
-  event.currentTarget.reset();
-  showToast(isRegister ? "Tạo tài khoản thành công! Chào mừng bạn đến LocalVibe." : "Đăng nhập thành công. Chúc bạn có chuyến đi tuyệt vời!");
+  const form = event.currentTarget;
+  const errorOutput = document.querySelector("#auth-error");
+  const submitButton = document.querySelector(".auth-submit");
+  errorOutput.hidden = true;
+  submitButton.disabled = true;
+  try {
+    const email = document.querySelector("#auth-email").value.trim().toLowerCase();
+    const password = document.querySelector("#auth-password").value;
+    if (isRegister) {
+      const name = document.querySelector("#auth-name").value.trim();
+      const confirmPassword = document.querySelector("#auth-confirm-password").value;
+      if (name.length < 2) throw new Error("Họ và tên cần có ít nhất 2 ký tự.");
+      if (password !== confirmPassword) throw new Error("Mật khẩu nhập lại chưa khớp.");
+      if (accounts.some((account) => account.email === email)) {
+        throw new Error("Email này đã có tài khoản. Hãy đăng nhập hoặc dùng email khác.");
+      }
+      const { salt, hash } = await hashPassword(password);
+      const previousAccounts = accounts;
+      accounts = [...accounts, { id: createId(), name, email, salt, passwordHash: hash, createdAt: new Date().toISOString() }];
+      try {
+        saveStoredValue(storageKeys.accounts, accounts);
+      } catch (error) {
+        accounts = previousAccounts;
+        throw error;
+      }
+    } else {
+      const account = accounts.find((item) => item.email === email);
+      if (!account) throw new Error("Email hoặc mật khẩu không chính xác.");
+      const { hash } = await hashPassword(password, account.salt);
+      const submittedBytes = base64ToBytes(hash);
+      const savedBytes = base64ToBytes(account.passwordHash);
+      let difference = submittedBytes.length ^ savedBytes.length;
+      for (let index = 0; index < Math.min(submittedBytes.length, savedBytes.length); index += 1) {
+        difference |= submittedBytes[index] ^ savedBytes[index];
+      }
+      if (difference !== 0) throw new Error("Email hoặc mật khẩu không chính xác.");
+    }
+    saveStoredValue(storageKeys.session, email);
+    currentUserEmail = email;
+    renderAccountActions();
+    authDialog.close();
+    form.reset();
+    showToast(isRegister ? "Tạo tài khoản thành công. Chào mừng bạn đến LocalVibe!" : "Đăng nhập thành công.");
+    if (pendingHotelIndex !== null) {
+      openBooking(pendingHotelIndex);
+    }
+  } catch (error) {
+    errorOutput.textContent = error.message || "Không thể hoàn tất xác thực. Vui lòng thử lại.";
+    errorOutput.hidden = false;
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+document.querySelector("#booking-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const hotel = hotels[pendingHotelIndex];
+  const user = getCurrentUser();
+  const errorOutput = document.querySelector("#booking-error");
+  errorOutput.hidden = true;
+  if (!hotel || !user) {
+    bookingDialog.close();
+    openAuth("login");
+    showToast("Vui lòng đăng nhập để đặt phòng.");
+    return;
+  }
+  const checkin = document.querySelector("#booking-check-in").value;
+  const checkout = document.querySelector("#booking-check-out").value;
+  const guests = Number(document.querySelector("#booking-guests").value);
+  const phone = document.querySelector("#booking-phone").value.trim();
+  const normalizedPhone = phone.replace(/[\s()-]/g, "");
+  const nights = datesToNights(checkin, checkout);
+  if (checkin < todayString || nights < 1 || !Number.isInteger(guests) || guests < 1 || guests > 20) {
+    errorOutput.textContent = "Kiểm tra ngày nhận/trả phòng và số khách trước khi tiếp tục.";
+    errorOutput.hidden = false;
+    return;
+  }
+  if (!/^\+?\d{9,15}$/.test(normalizedPhone)) {
+    errorOutput.textContent = "Số điện thoại cần có từ 9 đến 15 chữ số.";
+    errorOutput.hidden = false;
+    return;
+  }
+  const order = {
+    id: `LV-${createId().slice(0, 8).toUpperCase()}`,
+    userId: user.id,
+    email: user.email,
+    hotelName: hotel.name,
+    city: hotel.city,
+    image: hotel.image,
+    pricePerNight: hotel.price,
+    checkin,
+    checkout,
+    nights,
+    guests,
+    fullName: document.querySelector("#booking-name").value.trim(),
+    phone,
+    contactEmail: document.querySelector("#booking-email").value.trim().toLowerCase(),
+    payment: document.querySelector("#booking-payment").value,
+    note: document.querySelector("#booking-note").value.trim(),
+    total: hotel.price * nights,
+    status: "Chờ xác nhận",
+    createdAt: new Date().toISOString()
+  };
+  const previousOrders = orders;
+  orders = [...orders, order];
+  try {
+    saveStoredValue(storageKeys.orders, orders);
+    bookingDialog.close();
+    pendingHotelIndex = null;
+    document.querySelector("#booking-form").reset();
+    renderOrders();
+    ordersDialog.showModal();
+    showToast(`Đã tạo yêu cầu đặt phòng ${order.id}.`);
+  } catch (error) {
+    orders = previousOrders;
+    errorOutput.textContent = error.message;
+    errorOutput.hidden = false;
+  }
+});
+document.addEventListener("click", (event) => {
+  const authButton = event.target.closest("[data-auth]");
+  if (authButton) {
+    openAuth(authButton.dataset.auth);
+    return;
+  }
+  if (event.target.closest("[data-orders]")) {
+    renderOrders();
+    ordersDialog.showModal();
+    return;
+  }
+  if (event.target.closest("[data-logout]")) {
+    const previousEmail = currentUserEmail;
+    currentUserEmail = null;
+    try {
+      saveStoredValue(storageKeys.session, null);
+      renderAccountActions();
+      showToast("Bạn đã đăng xuất khỏi LocalVibe.");
+    } catch (error) {
+      currentUserEmail = previousEmail;
+      showToast(error.message);
+    }
+  }
+});
+document.querySelector("#orders-list").addEventListener("click", (event) => {
+  const cancelButton = event.target.closest("[data-cancel-order]");
+  if (!cancelButton) return;
+  const order = orders.find((item) => item.id === cancelButton.dataset.cancelOrder && item.email === currentUserEmail);
+  if (!order || order.status !== "Chờ xác nhận" || order.checkin < todayString) {
+    showToast("Đơn này không thể hủy.");
+    return;
+  }
+  if (!window.confirm(`Bạn có chắc muốn hủy đơn ${order.id} không?`)) return;
+  const previousOrders = orders;
+  orders = orders.map((item) => item.id === order.id ? { ...item, status: "Đã hủy" } : item);
+  try {
+    saveStoredValue(storageKeys.orders, orders);
+    renderOrders();
+    showToast(`Đã hủy đơn ${order.id}.`);
+  } catch (error) {
+    orders = previousOrders;
+    showToast(error.message);
+  }
 });
 document.querySelector("#newsletter-form").addEventListener("submit", (event) => {
   event.preventDefault();

@@ -33,8 +33,10 @@
 
       <div class="header-actions">
         <button class="language-button" type="button" aria-label="Đổi ngôn ngữ">◎ <span>VI</span></button>
-        <button class="text-button" type="button" data-auth="login">Đăng nhập</button>
-        <button class="button button-small" type="button" data-auth="register">Đăng ký</button>
+        <div class="account-actions" id="account-actions">
+          <button class="text-button" type="button" data-auth="login">Đăng nhập</button>
+          <button class="button button-small" type="button" data-auth="register">Đăng ký</button>
+        </div>
         <button class="menu-toggle" type="button" aria-label="Mở menu" aria-expanded="false">
           <span></span><span></span><span></span>
         </button>
@@ -193,8 +195,62 @@
       <span class="eyebrow">CHÀO MỪNG ĐẾN VỚI LOCALVIBE</span>
       <h2 id="auth-title">Đăng nhập</h2>
       <p>Lưu lại những chuyến đi bạn yêu thích.</p>
-      <form id="auth-form"><label for="auth-email">Email</label><input id="auth-email" type="email" placeholder="ban@email.com" required /><label for="auth-password">Mật khẩu</label><input id="auth-password" type="password" placeholder="Tối thiểu 8 ký tự" minlength="8" required /><button class="button auth-submit" type="submit">Đăng nhập</button></form>
+      <form id="auth-form">
+        <label class="auth-register-field" for="auth-name" hidden>Họ và tên</label>
+        <input class="auth-register-field" id="auth-name" type="text" placeholder="Nguyễn Văn An" autocomplete="name" minlength="2" maxlength="80" hidden />
+        <label for="auth-email">Email</label>
+        <input id="auth-email" type="email" placeholder="ban@email.com" autocomplete="email" maxlength="254" required />
+        <label for="auth-password">Mật khẩu</label>
+        <input id="auth-password" type="password" placeholder="Tối thiểu 8 ký tự" autocomplete="current-password" minlength="8" maxlength="128" required />
+        <label class="auth-register-field" for="auth-confirm-password" hidden>Nhập lại mật khẩu</label>
+        <input class="auth-register-field" id="auth-confirm-password" type="password" placeholder="Nhập lại mật khẩu" autocomplete="new-password" minlength="8" maxlength="128" hidden />
+        <p class="form-error" id="auth-error" role="alert" hidden></p>
+        <button class="button auth-submit" type="submit">Đăng nhập</button>
+      </form>
       <button class="auth-switch" id="auth-switch" type="button">Chưa có tài khoản? <strong>Đăng ký</strong></button>
+      <p class="demo-disclaimer">Tài khoản chỉ được lưu trên trình duyệt này. Đây là bản demo, chưa có máy chủ xác thực.</p>
+    </dialog>
+
+    <dialog class="booking-dialog" id="booking-dialog" aria-labelledby="booking-title">
+      <button class="dialog-close" type="button" aria-label="Đóng">×</button>
+      <div class="booking-dialog-body">
+        <span class="eyebrow">HOÀN TẤT ĐẶT PHÒNG</span>
+        <h2 id="booking-title">Thông tin đặt phòng</h2>
+        <div class="booking-hotel-summary" id="booking-hotel-summary"></div>
+        <form id="booking-form">
+          <div class="booking-form-grid">
+            <label>Họ và tên<input id="booking-name" name="name" type="text" autocomplete="name" minlength="2" maxlength="80" required /></label>
+            <label>Số điện thoại<input id="booking-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" minlength="9" maxlength="20" placeholder="0912 345 678" required /></label>
+            <label>Email nhận xác nhận<input id="booking-email" name="email" type="email" autocomplete="email" maxlength="254" required /></label>
+            <label>Số khách<input id="booking-guests" name="guests" type="number" min="1" max="20" required /></label>
+            <label>Ngày nhận phòng<input id="booking-check-in" name="checkin" type="date" required /></label>
+            <label>Ngày trả phòng<input id="booking-check-out" name="checkout" type="date" required /></label>
+            <label class="booking-payment-field">Hình thức thanh toán
+              <select id="booking-payment" name="payment" required>
+                <option value="Tại chỗ nghỉ">Thanh toán tại chỗ nghỉ</option>
+                <option value="Chuyển khoản khi xác nhận">Chuyển khoản khi xác nhận</option>
+              </select>
+            </label>
+            <label class="booking-note-field">Yêu cầu thêm (không bắt buộc)
+              <textarea id="booking-note" name="note" rows="2" maxlength="300" placeholder="Ví dụ: nhận phòng muộn..."></textarea>
+            </label>
+          </div>
+          <p class="booking-total" id="booking-total"></p>
+          <p class="form-error" id="booking-error" role="alert" hidden></p>
+          <p class="demo-disclaimer">Đây là yêu cầu đặt phòng demo; chưa kết nối với khách sạn hoặc cổng thanh toán.</p>
+          <button class="button booking-submit" type="submit">Xác nhận đặt phòng</button>
+        </form>
+      </div>
+    </dialog>
+
+    <dialog class="orders-dialog" id="orders-dialog" aria-labelledby="orders-title">
+      <button class="dialog-close" type="button" aria-label="Đóng">×</button>
+      <div class="orders-dialog-body">
+        <span class="eyebrow">TÀI KHOẢN CỦA BẠN</span>
+        <h2 id="orders-title">Đơn đặt phòng</h2>
+        <p class="orders-subtitle" id="orders-subtitle"></p>
+        <div class="orders-list" id="orders-list"></div>
+      </div>
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
