@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Tìm và đặt khách sạn, resort tuyệt đẹp trên khắp Việt Nam cùng LocalVibe."
+    />
+    <meta name="theme-color" content="#062f48" />
+    <title>LocalVibe — Đặt phòng khách sạn</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header" id="top">
+      <a class="brand" href="#top" aria-label="LocalVibe — trang chủ">
+        <span class="brand-mark" aria-hidden="true">⌂</span>
+        <span>LocalVibe</span>
+      </a>
+
+      <nav class="main-nav" aria-label="Điều hướng chính">
+        <a href="#hotels" data-kind="Khách sạn">Khách sạn</a>
+        <a href="#hotels" data-kind="Resort">Resort</a>
+        <a href="#hotels" data-kind="Biệt thự">Biệt thự</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="language-button" type="button" aria-label="Đổi ngôn ngữ">◎ <span>VI</span></button>
+        <button class="text-button" type="button" data-auth="login">Đăng nhập</button>
+        <button class="button button-small" type="button" data-auth="register">Đăng ký</button>
+        <button class="menu-toggle" type="button" aria-label="Mở menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-shade"></div>
+        <div class="hero-content">
+          <div class="social-proof"><span aria-hidden="true">★</span> Hơn 2 triệu đánh giá tích cực</div>
+          <h1 id="hero-title">Khám phá điểm đến<br /><span>trong mơ</span> của bạn</h1>
+          <p class="hero-copy">
+            Hàng nghìn khách sạn, resort cao cấp trên khắp Việt Nam —<br class="desktop-break" />
+            đặt phòng dễ dàng, giá tốt nhất.
+          </p>
+
+          <form class="search-panel" id="search-form">
+            <label class="search-field destination-field">
+              <span class="field-label"><span aria-hidden="true">⌖</span> Điểm đến</span>
+              <input id="destination" name="destination" type="search" placeholder="Tìm điểm đến..." autocomplete="off" />
+              <span class="suggestions" id="destination-suggestions" role="listbox"></span>
+            </label>
+            <label class="search-field">
+              <span class="field-label"><span aria-hidden="true">▦</span> Nhận phòng</span>
+              <input id="check-in" name="checkin" type="date" />
+            </label>
+            <label class="search-field">
+              <span class="field-label"><span aria-hidden="true">▦</span> Trả phòng</span>
+              <input id="check-out" name="checkout" type="date" />
+            </label>
+            <div class="search-field guest-field">
+              <span class="field-label"><span aria-hidden="true">♙</span> Khách</span>
+              <div class="guest-control">
+                <button type="button" id="guest-minus" aria-label="Giảm số khách">−</button>
+                <output id="guest-count" aria-live="polite">2</output>
+                <button type="button" id="guest-plus" aria-label="Tăng số khách">+</button>
+              </div>
+            </div>
+            <button class="button search-button" type="submit"><span aria-hidden="true">⌕</span> Tìm kiếm</button>
+          </form>
+
+          <div class="quick-destinations" aria-label="Điểm đến gợi ý">
+            <button type="button" data-destination="Đà Nẵng">⌖ Đà Nẵng</button>
+            <button type="button" data-destination="Hà Nội">⌖ Hà Nội</button>
+            <button type="button" data-destination="Phú Quốc">⌖ Phú Quốc</button>
+            <button type="button" data-destination="Nha Trang">⌖ Nha Trang</button>
+            <button type="button" data-destination="Đà Lạt">⌖ Đà Lạt</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="trust-strip" aria-label="Lý do chọn LocalVibe">
+        <article class="trust-item">
+          <span class="trust-icon">♧</span>
+          <div><h2>Đặt phòng an toàn</h2><p>Thanh toán bảo mật SSL, dữ liệu được mã hóa</p></div>
+        </article>
+        <article class="trust-item">
+          <span class="trust-icon">♡</span>
+          <div><h2>Giá tốt nhất</h2><p>Cam kết hoàn tiền nếu tìm được giá tốt hơn</p></div>
+        </article>
+        <article class="trust-item">
+          <span class="trust-icon">◷</span>
+          <div><h2>Hỗ trợ 24/7</h2><p>Đội ngũ tư vấn sẵn sàng hỗ trợ mọi lúc</p></div>
+        </article>
+        <article class="trust-item">
+          <span class="trust-icon">⌂</span>
+          <div><h2>500K+ chỗ nghỉ</h2><p>Lựa chọn đa dạng từ bình dân đến cao cấp</p></div>
+        </article>
+      </section>
+
+      <section class="section category-section" aria-labelledby="category-title">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">TÌM THEO SỞ THÍCH</span>
+            <h2 id="category-title">Khám phá theo loại</h2>
+          </div>
+        </div>
+        <div class="category-grid">
+          <button class="category-card" type="button" data-category="Bãi biển"><span>🏖️</span><strong>Bãi biển</strong></button>
+          <button class="category-card" type="button" data-category="Núi & Rừng"><span>🌲</span><strong>Núi &amp; Rừng</strong></button>
+          <button class="category-card" type="button" data-category="Thành phố"><span>🏙️</span><strong>Thành phố</strong></button>
+          <button class="category-card" type="button" data-category="Đảo"><span>🏝️</span><strong>Đảo</strong></button>
+          <button class="category-card" type="button" data-category="Di sản"><span>🏛️</span><strong>Di sản</strong></button>
+          <button class="category-card" type="button" data-category="Spa & Relax"><span>🧖</span><strong>Spa &amp; Relax</strong></button>
+        </div>
+      </section>
+
+      <section class="section destinations-section" aria-labelledby="destinations-title">
+        <div class="section-heading">
+          <div><span class="eyebrow">ĐIỂM ĐẾN ĐƯỢC YÊU THÍCH</span><h2 id="destinations-title">Điểm đến phổ biến</h2></div>
+          <a class="link-arrow" href="#hotels">Xem tất cả <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="destination-grid">
+          <button class="destination-card" type="button" data-destination="Đà Nẵng">
+            <img src="https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&amp;fit=crop&amp;w=800&amp;q=85" alt="Bãi biển và thành phố Đà Nẵng" />
+            <span class="destination-overlay"><strong>Đà Nẵng</strong><small>230+ khách sạn</small></span>
+          </button>
+          <button class="destination-card" type="button" data-destination="Hà Nội">
+            <img src="https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?auto=format&amp;fit=crop&amp;w=800&amp;q=85" alt="Phố cổ Hà Nội" />
+            <span class="destination-overlay"><strong>Hà Nội</strong><small>410+ khách sạn</small></span>
+          </button>
+          <button class="destination-card" type="button" data-destination="Hồ Chí Minh">
+            <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&amp;fit=crop&amp;w=800&amp;q=85" alt="Thành phố Hồ Chí Minh về đêm" />
+            <span class="destination-overlay"><strong>Hồ Chí Minh</strong><small>580+ khách sạn</small></span>
+          </button>
+          <button class="destination-card" type="button" data-destination="Phú Quốc">
+            <img src="https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&amp;fit=crop&amp;w=800&amp;q=85" alt="Bãi biển nhiệt đới Phú Quốc" />
+            <span class="destination-overlay"><strong>Phú Quốc</strong><small>170+ resort</small></span>
+          </button>
+        </div>
+      </section>
+
+      <section class="section hotels-section" id="hotels" aria-labelledby="hotels-title">
+        <div class="section-heading">
+          <div><span class="eyebrow">ĐƯỢC KHÁCH HÀNG YÊU THÍCH</span><h2 id="hotels-title">Khách sạn nổi bật</h2><p class="section-subtitle" id="results-caption">Được khách hàng đánh giá cao nhất</p></div>
+          <button class="link-arrow" id="show-all" type="button">Tất cả <span aria-hidden="true">→</span></button>
+        </div>
+        <div class="hotel-grid" id="hotel-grid" aria-live="polite"></div>
+        <p class="empty-state" id="empty-state" hidden>Chưa tìm thấy chỗ nghỉ phù hợp. Hãy thử điểm đến khác nhé.</p>
+      </section>
+
+      <section class="app-banner">
+        <div class="app-banner-copy">
+          <span class="eyebrow">LOCALVIBE TRÊN ĐIỆN THOẠI</span>
+          <h2>Chuyến đi tuyệt vời,<br />ngay trong tầm tay.</h2>
+          <p>Tải app ngay để nhận ưu đãi độc quyền và quản lý đặt phòng dễ dàng hơn.</p>
+          <div class="store-buttons">
+            <a href="#hotels" class="store-button"><span aria-hidden="true">◉</span><span><small>Tải trên</small><strong>App Store</strong></span></a>
+            <a href="#hotels" class="store-button"><span aria-hidden="true">▷</span><span><small>Có trên</small><strong>Google Play</strong></span></a>
+          </div>
+        </div>
+        <div class="app-art" aria-hidden="true"><div class="phone"><div class="phone-screen"><span class="phone-brand">⌂ LocalVibe</span><div class="phone-image"></div><strong>Chuyến đi của bạn</strong><span class="phone-line"></span><span class="phone-line short"></span><span class="phone-cta"></span></div></div><span class="art-sun"></span></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-main">
+        <div class="footer-brand"><a class="brand" href="#top"><span class="brand-mark">⌂</span><span>LocalVibe</span></a><p>Nền tảng đặt phòng khách sạn<br />hàng đầu Việt Nam.</p><div class="social-links"><a href="#top" aria-label="Facebook">f</a><a href="#top" aria-label="Instagram">◎</a><a href="#top" aria-label="TikTok">♪</a></div></div>
+        <div class="footer-column"><h2>Hỗ trợ</h2><a href="#top">Trung tâm trợ giúp</a><a href="#top">Liên hệ</a><a href="#top">Chính sách hoàn tiền</a></div>
+        <div class="footer-column"><h2>Dịch vụ</h2><a href="#hotels">Khách sạn</a><a href="#hotels">Resort</a><a href="#hotels">Biệt thự</a><a href="#hotels">Căn hộ</a></div>
+        <div class="footer-column"><h2>Công ty</h2><a href="#top">Về chúng tôi</a><a href="#top">Tuyển dụng</a><a href="#top">Tin tức</a><a href="#top">Đối tác</a></div>
+        <div class="footer-newsletter"><h2>Nhận ưu đãi mới</h2><p>Ưu đãi du lịch hấp dẫn gửi thẳng đến hộp thư của bạn.</p><form id="newsletter-form"><label class="visually-hidden" for="newsletter-email">Địa chỉ email</label><input id="newsletter-email" type="email" placeholder="Email của bạn" required /><button type="submit" aria-label="Đăng ký nhận tin">→</button></form></div>
+      </div>
+      <div class="footer-bottom"><span>© 2024 LocalVibe. Tất cả quyền được bảo lưu.</span><span>Điều khoản &nbsp; · &nbsp; Quyền riêng tư</span></div>
+    </footer>
+
+    <dialog class="detail-dialog" id="detail-dialog" aria-labelledby="dialog-title">
+      <button class="dialog-close" type="button" aria-label="Đóng">×</button>
+      <div id="dialog-content"></div>
+    </dialog>
+
+    <dialog class="auth-dialog" id="auth-dialog">
+      <button class="dialog-close" type="button" aria-label="Đóng">×</button>
+      <div class="auth-icon">⌂</div>
+      <span class="eyebrow">CHÀO MỪNG ĐẾN VỚI LOCALVIBE</span>
+      <h2 id="auth-title">Đăng nhập</h2>
+      <p>Lưu lại những chuyến đi bạn yêu thích.</p>
+      <form id="auth-form"><label for="auth-email">Email</label><input id="auth-email" type="email" placeholder="ban@email.com" required /><label for="auth-password">Mật khẩu</label><input id="auth-password" type="password" placeholder="Tối thiểu 8 ký tự" minlength="8" required /><button class="button auth-submit" type="submit">Đăng nhập</button></form>
+      <button class="auth-switch" id="auth-switch" type="button">Chưa có tài khoản? <strong>Đăng ký</strong></button>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
